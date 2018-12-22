@@ -1,25 +1,58 @@
-console.log("Starting app");
-
 const fs = require('fs');
 const _ = require('lodash');
 const yargs = require('yargs');
 
 const notes = require('./notes.js');
 
-let argv = yargs.argv;
+const titleOptions = {
+  describe: 'title of note',
+  demand: true,
+  alias: 't'
+};
+const bodyOptions = {
+  describe: 'body of note',
+  demand: true,
+  alias: 'b'
+};
+
+let argv = yargs
+  .command('add', 'Add a new note', {
+    title: titleOptions,
+    body: bodyOptions
+  })
+  .command('list', 'List all notes')
+  .command('read', 'Read a note', {
+    title: titleOptions
+  })
+  .command('remove', 'Remove a note', {
+    title: titleOptions
+  })
+  .help()
+  .argv;
 let command = argv._[0];
-console.log("Command: ", command);
-console.log('Process', process.argv);
-console.log('Yargs', argv);
 
 if (command === 'add') {
-  notes.addNote(argv.title, argv.body);
+  let note = notes.addNote(argv.title, argv.body);
+  if (note) {
+    notes.logNote(note);
+  } else {
+    console.log(":(");
+  }
 } else if (command === 'list') {
-  notes.getAll();
+  let allNotes = notes.getAll();
+  console.log(`Printing ${allNotes.length} note(s)`);
+  allNotes.forEach(note => notes.logNote(note));
 } else if (command === 'read') {
-  notes.getNote(argv.title);
+  let note = notes.getNote(argv.title);
+  if (note) {
+    notes.logNote(note);
+  } else {
+    console.log("Note not found");
+  }
 } else if (command === 'remove') {
-  notes.removeNote(argv.title);
+  let noteRemoved = notes.removeNote(argv.title);
+  let message = noteRemoved ? "Note removed" : "Note not found";
+  console.log(message);
 } else {
   console.log("Command not recognized.");
 }
